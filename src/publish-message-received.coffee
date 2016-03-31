@@ -3,7 +3,7 @@ http = require 'http'
 
 class PublishMessage
   constructor: (options={}) ->
-    {@cache,uuidAliasResolver} = options
+    {@cache,@uuidAliasResolver} = options
 
   _doCallback: (request, code, callback) =>
     response =
@@ -22,6 +22,8 @@ class PublishMessage
       return @_doCallback request, 204, callback
 
   _send: ({toUuid,messageType,message}, callback=->) =>
-    @cache.publish "#{toUuid}", message, callback
+    @uuidAliasResolver.resolve (error, uuid) =>
+      return callback error if error?
+      @cache.publish "#{uuid}", message, callback
 
 module.exports = PublishMessage
