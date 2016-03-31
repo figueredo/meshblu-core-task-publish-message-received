@@ -1,7 +1,7 @@
 _ = require 'lodash'
 uuid = require 'uuid'
 redis = require 'fakeredis'
-MessageWebhook = require '../src/publish-message-received'
+PublishMessageReceived = require '..'
 
 describe 'MessageReceived', ->
   beforeEach ->
@@ -14,7 +14,7 @@ describe 'MessageReceived', ->
 
     dependencies = {@request}
 
-    @sut = new MessageWebhook options, dependencies
+    @sut = new PublishMessageReceived options, dependencies
     @cache = redis.createClient @redisKey
 
   describe '->do', ->
