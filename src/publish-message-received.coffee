@@ -22,7 +22,7 @@ class PublishMessage
       return @_doCallback request, 204, callback
 
   _send: ({toUuid,messageType,message}, callback=->) =>
-    @uuidAliasResolver.resolve (error, uuid) =>
+    @uuidAliasResolver.resolve toUuid, (error, uuid) =>
       return callback error if error?
       @cache.publish "#{uuid}", message, callback
 
