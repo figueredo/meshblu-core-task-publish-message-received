@@ -14,8 +14,8 @@ class PublishMessage
     callback null, response
 
   do: (request, callback) =>
-    {toUuid, messageType, messageRoute} = request.metadata
-    if _.some(messageRoute, type: 'message.received')
+    {toUuid, fromUuid, messageType, messageRoute} = request.metadata
+    if _.find(messageRoute, {toUuid: toUuid, fromUuid: fromUuid, type: 'message.received'})?
       return @_doCallback request, 204, callback
 
     message = request.rawData
