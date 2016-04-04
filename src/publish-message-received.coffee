@@ -14,14 +14,16 @@ class PublishMessage
     callback null, response
 
   do: (request, callback) =>
-    {toUuid, messageType} = request.metadata
+    {toUuid, messageType, messageRoute} = request.metadata
+    if _.some(messageRoute, type: 'message.received')
+      return @_doCallback request, 204, callback
 
     message = request.rawData
     @_send {toUuid, messageType, message}, (error) =>
       return callback error if error?
       return @_doCallback request, 204, callback
 
-  _send: ({toUuid,messageType,message}, callback=->) =>
+  _send: ({toUuid, messageType, message}, callback=->) =>
     @uuidAliasResolver.resolve toUuid, (error, uuid) =>
       return callback error if error?
       @cache.publish "#{uuid}", message, callback

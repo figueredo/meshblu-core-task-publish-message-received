@@ -54,6 +54,48 @@ describe 'MessageReceived', ->
           done()
         , 100
 
+    context 'when given a message with a forwardedFor that says we already delivered it', ->
+      beforeEach (done) ->
+        @cache.subscribe 'receiver-uuid', (error) => done error
+
+      beforeEach ->
+        @cache.once 'message', (channel, @message) =>
+
+      beforeEach (done) ->
+        request =
+          metadata:
+            responseId: 'its-electric'
+            auth:
+              uuid: 'sender-uuid'
+              token: 'sender-token'
+            toUuid: 'receiver-uuid'
+            fromUuid: 'sender-uuid'
+            messageType: 'message-received'
+            messageRoute: [
+              fromUuid: 'receiver-uuid'
+              toUuid: 'sender-uuid'
+              type: 'message.received'
+            ]
+          rawData: '{"does_not": "matter"}'
+
+        @sut.do request, (error, @response) => done error
+
+      it 'should return a 204', ->
+        expectedResponse =
+          metadata:
+            responseId: 'its-electric'
+            code: 204
+            status: 'No Content'
+
+        expect(@response).to.deep.equal expectedResponse
+
+      it "shouldn't deliver the message", (done) ->
+        _.delay =>
+          expect(@message).not.to.exist
+          done()
+        , 100
+
+
     context 'when given a valid message with an alias', ->
       beforeEach (done) ->
         @cache.subscribe 'receiver-uuid', (error) =>
