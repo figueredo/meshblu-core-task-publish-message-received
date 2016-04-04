@@ -20,8 +20,7 @@ describe 'MessageReceived', ->
   describe '->do', ->
     context 'when given a valid message', ->
       beforeEach (done) ->
-        @cache.subscribe 'receiver-uuid', (error) =>
-          done error
+        @cache.subscribe 'receiver-uuid', (error) => done error
 
       beforeEach ->
         @cache.once 'message', (channel, @message) =>
@@ -35,8 +34,8 @@ describe 'MessageReceived', ->
               token: 'sender-token'
             toUuid: 'receiver-uuid'
             fromUuid: 'sender-uuid'
-            messageType: 'sent'
-          rawData: '{"devices":"*"}'
+            messageType: 'message-received'
+          rawData: '{"does_not": "matter"}'
 
         @sut.do request, (error, @response) => done error
 
@@ -51,7 +50,7 @@ describe 'MessageReceived', ->
 
       it 'should publish the message to redis', (done) ->
         _.delay =>
-          expect(@message).to.deep.equal '{"devices":"*"}'
+          expect(@message).to.deep.equal '{"does_not": "matter"}'
           done()
         , 100
 
@@ -73,7 +72,7 @@ describe 'MessageReceived', ->
             toUuid: 'muggle-mouth'
             fromUuid: 'sender-uuid'
             messageType: 'sent'
-          rawData: '{"devices":"*"}'
+          rawData: '{"does_not": "matter"}'
         @uuidAliasResolver.resolve.yields null, 'receiver-uuid'
         @sut.do request, (error, @response) => done error
 
@@ -88,6 +87,6 @@ describe 'MessageReceived', ->
 
       it 'should publish the message to redis', (done) ->
         _.delay =>
-          expect(@message).to.deep.equal '{"devices":"*"}'
+          expect(@message).to.deep.equal '{"does_not": "matter"}'
           done()
         , 100
