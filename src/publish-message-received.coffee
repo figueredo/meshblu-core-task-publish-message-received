@@ -14,10 +14,7 @@ class PublishMessage
     callback null, response
 
   do: (request, callback) =>
-    {toUuid, fromUuid, messageType, messageRoute} = request.metadata
-    if _.find(messageRoute, {toUuid: toUuid, fromUuid: fromUuid, type: 'message.received'})?
-      return @_doCallback request, 204, callback
-
+    {toUuid, messageType} = request.metadata
     message = request.rawData
     @_send {toUuid, messageType, message}, (error) =>
       return callback error if error?
