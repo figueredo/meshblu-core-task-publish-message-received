@@ -22,21 +22,25 @@ describe 'MessageReceived', ->
       beforeEach (done) ->
         @cache.subscribe 'receiver-uuid', (error) => done error
 
-      beforeEach ->
-        @cache.once 'message', (channel, @message) =>
 
       beforeEach (done) ->
         request =
           metadata:
             responseId: 'its-electric'
             auth:
-              uuid: 'sender-uuid'
-              token: 'sender-token'
+              uuid: 'receiver-uuid'
+              token: 'receiver-token'
             toUuid: 'receiver-uuid'
             fromUuid: 'sender-uuid'
-          rawData: '{"does_not": "matter"}'
+            route: [
+              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+            ]
 
-        @sut.do request, (error, @response) => done error
+          rawData: '{"does_not":"matter"}'
+
+        doneTwice = _.after 2, done
+        @cache.once 'message', (channel, @message) => doneTwice()
+        @sut.do request, (error, @response) => doneTwice error
 
       it 'should return a 204', ->
         expectedResponse =
@@ -47,19 +51,20 @@ describe 'MessageReceived', ->
 
         expect(@response).to.deep.equal expectedResponse
 
-      it 'should publish the message to redis', (done) ->
-        _.delay =>
-          expect(@message).to.deep.equal '{"does_not": "matter"}'
-          done()
-        , 100
+      it 'should publish the message to redis', ->
+        expect(@message).to.exist
+        expect(JSON.parse @message).to.deep.equal {
+          metadata:
+            route: [
+              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+            ]
+          rawData: '{"does_not":"matter"}'
+        }
 
     context 'when given a valid message with an alias', ->
       beforeEach (done) ->
         @cache.subscribe 'receiver-uuid', (error) =>
           done error
-
-      beforeEach ->
-        @cache.once 'message', (channel, @message) =>
 
       beforeEach (done) ->
         request =
@@ -71,9 +76,15 @@ describe 'MessageReceived', ->
             toUuid: 'muggle-mouth'
             fromUuid: 'sender-uuid'
             messageType: 'sent'
-          rawData: '{"does_not": "matter"}'
+            route: [
+              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+            ]
+          rawData: '{"does_not":"matter"}'
         @uuidAliasResolver.resolve.yields null, 'receiver-uuid'
-        @sut.do request, (error, @response) => done error
+
+        doneTwice = _.after 2, done
+        @cache.once 'message', (channel, @message) => doneTwice()
+        @sut.do request, (error, @response) => doneTwice error
 
       it 'should return a 204', ->
         expectedResponse =
@@ -84,8 +95,12 @@ describe 'MessageReceived', ->
 
         expect(@response).to.deep.equal expectedResponse
 
-      it 'should publish the message to redis', (done) ->
-        _.delay =>
-          expect(@message).to.deep.equal '{"does_not": "matter"}'
-          done()
-        , 100
+      it 'should publish the message to redis', ->
+        expect(@message).to.exist
+        expect(JSON.parse @message).to.deep.equal {
+          metadata:
+            route: [
+              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+            ]
+          rawData: '{"does_not":"matter"}'
+        }
