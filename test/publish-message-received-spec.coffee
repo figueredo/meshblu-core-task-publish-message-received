@@ -32,7 +32,7 @@ describe 'MessageReceived', ->
             toUuid: 'receiver-uuid'
             fromUuid: 'receiver-uuid'
             route: [
-              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+              {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
 
           rawData: '{"does_not":"matter"}'
@@ -55,12 +55,12 @@ describe 'MessageReceived', ->
         expect(JSON.parse @message).to.deep.equal {
           metadata:
             route: [
-              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+              {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
           rawData: '{"does_not":"matter"}'
         }
 
-    context 'when given a valid message not from me to me', ->
+    context 'when given a valid message not from me to me in the last hop', ->
       beforeEach (done) ->
         @cache.subscribe 'receiver-uuid', (error) => done error
 
@@ -74,7 +74,7 @@ describe 'MessageReceived', ->
             toUuid: 'receiver-uuid'
             fromUuid: 'other-uuid'
             route: [
-              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+              {type: 'message.received', from: 'sender-uuid', to: 'receiver-uuid'}
             ]
 
           rawData: '{"does_not":"matter"}'
@@ -113,7 +113,7 @@ describe 'MessageReceived', ->
             fromUuid: 'sender-uuid'
             messageType: 'sent'
             route: [
-              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+              {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
           rawData: '{"does_not":"matter"}'
 
@@ -137,7 +137,7 @@ describe 'MessageReceived', ->
         expect(JSON.parse @message).to.deep.equal {
           metadata:
             route: [
-              {type: 'message.received', fromUuid: 'sender-uuid', toUuid: 'receiver-uuid'}
+              {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
           rawData: '{"does_not":"matter"}'
         }

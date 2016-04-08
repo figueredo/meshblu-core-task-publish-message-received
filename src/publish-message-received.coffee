@@ -14,13 +14,15 @@ class PublishMessage
     callback null, response
 
   do: (request, callback) =>
-    {fromUuid, toUuid} = request.metadata
+    {fromUuid, toUuid, route} = request.metadata
+    lastHop = _.first route
     return @_doCallback request, 422, callback unless fromUuid?
     return @_doCallback request, 422, callback unless toUuid?
+    return @_doCallback request, 422, callback unless lastHop?
+    return @_doCallback request, 204, callback unless lastHop.from == lastHop.to && lastHop.type == 'message.received'
 
     @uuidAliasResolver.resolve toUuid, (error, toUuid) =>
       return callback error if error?
-      return @_doCallback request, 204, callback unless toUuid == fromUuid
 
       message = JSON.stringify @_buildMessage request
       @_send {toUuid, message}, (error) =>
