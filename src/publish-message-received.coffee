@@ -14,11 +14,18 @@ class PublishMessage
     callback null, response
 
   do: (request, callback) =>
-    {toUuid} = request.metadata
-    message = JSON.stringify @_buildMessage request
-    @_send {toUuid, message}, (error) =>
+    {fromUuid, toUuid} = request.metadata
+    return @_doCallback request, 422, callback unless fromUuid?
+    return @_doCallback request, 422, callback unless toUuid?
+
+    @uuidAliasResolver.resolve toUuid, (error, toUuid) =>
       return callback error if error?
-      return @_doCallback request, 204, callback
+      return @_doCallback request, 204, callback unless toUuid == fromUuid
+
+      message = JSON.stringify @_buildMessage request
+      @_send {toUuid, message}, (error) =>
+        return callback error if error?
+        return @_doCallback request, 204, callback
 
   _buildMessage: (request) =>
     return {
@@ -28,8 +35,6 @@ class PublishMessage
     }
 
   _send: ({toUuid, message}, callback=->) =>
-    @uuidAliasResolver.resolve toUuid, (error, uuid) =>
-      return callback error if error?
-      @cache.publish "#{uuid}", message, callback
+    @cache.publish "#{toUuid}", message, callback
 
 module.exports = PublishMessage
