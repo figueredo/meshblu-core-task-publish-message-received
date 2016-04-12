@@ -1,6 +1,6 @@
 {
   "name": "meshblu-core-task-publish-message-received",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Publish a message received by a device",
   "main": "index.js",
   "directories": {
