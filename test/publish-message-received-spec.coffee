@@ -54,6 +54,7 @@ describe 'MessageReceived', ->
         expect(@message).to.exist
         expect(JSON.parse @message).to.deep.equal {
           metadata:
+            responseId: 'its-electric'
             route: [
               {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
@@ -136,6 +137,7 @@ describe 'MessageReceived', ->
         expect(@message).to.exist
         expect(JSON.parse @message).to.deep.equal {
           metadata:
+            responseId: 'its-electric'
             route: [
               {type: 'message.received', from: 'receiver-uuid', to: 'receiver-uuid'}
             ]
