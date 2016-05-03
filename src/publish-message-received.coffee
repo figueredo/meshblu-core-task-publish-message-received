@@ -34,6 +34,7 @@ class PublishMessage
       metadata:
         responseId: request.metadata.responseId
         route: request.metadata.route
+        forwardedRoutes: request.metadata.forwardedRoutes
       rawData: request.rawData
     }
 
