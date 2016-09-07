@@ -26,6 +26,7 @@ class PublishMessage
 
     @uuidAliasResolver.resolve toUuid, (error, toUuid) =>
       return callback error if error?
+      return @_doCallback request, 204, callback unless lastHop.to == toUuid
 
       message = JSON.stringify @_buildMessage request
       @_send {toUuid, message}, (error) =>

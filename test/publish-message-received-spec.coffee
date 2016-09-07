@@ -1,3 +1,7 @@
+{beforeEach, context, describe, it} = global
+{expect} = require 'chai'
+sinon = require 'sinon'
+
 _ = require 'lodash'
 uuid = require 'uuid'
 redis = require 'fakeredis'
@@ -100,7 +104,7 @@ describe 'MessageReceived', ->
 
     context 'when given a valid message with an alias', ->
       beforeEach 'subscribe', (done) ->
-        @cache.subscribe 'sender-uuid', (error) =>
+        @cache.subscribe 'receiver-uuid', (error) =>
           done error
 
       beforeEach 'send-message', (done) ->
@@ -118,7 +122,7 @@ describe 'MessageReceived', ->
             ]
           rawData: '{"does_not":"matter"}'
 
-        @uuidAliasResolver.resolve.yields null, 'sender-uuid'
+        @uuidAliasResolver.resolve.yields null, 'receiver-uuid'
 
         doneTwice = _.after 2, done
         @cache.once 'message', (channel, @message) => doneTwice()
@@ -143,3 +147,40 @@ describe 'MessageReceived', ->
             ]
           rawData: '{"does_not":"matter"}'
         }
+
+    context 'when given a valid message not really to me in the last hop', ->
+      beforeEach 'subscribe to redis', (done) ->
+        @cache.subscribe 'receiver-uuid', (error) => done error
+
+      beforeEach 'do job', (done) ->
+        request =
+          metadata:
+            responseId: 'its-electric'
+            auth:
+              uuid: 'receiver-uuid'
+              token: 'receiver-token'
+            toUuid: 'receiver-uuid'
+            fromUuid: 'other-uuid'
+            route: [
+              {type: 'message.received', from: 'other-uuid', to: 'other-uuid'}
+            ]
+
+          rawData: '{"does_not":"matter"}'
+
+        @cache.once 'message', (channel, @message) => throw new Error('Should not publish this message')
+        @sut.do request, (error, @response) => done error
+
+      it 'should return a 204', ->
+        expectedResponse =
+          metadata:
+            responseId: 'its-electric'
+            code: 204
+            status: 'No Content'
+
+        expect(@response).to.deep.equal expectedResponse
+
+      it 'should not publish the message to redis', (done) ->
+        _.defer =>
+          expect(@message).not.to.exist
+          done()
+        , 100
